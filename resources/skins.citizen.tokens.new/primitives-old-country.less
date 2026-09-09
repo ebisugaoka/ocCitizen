@@ -24,4 +24,15 @@
 --color-renaissance-dark-800: oklch(19.49% 0.05 59.60);
 --color-renaissance-dark-900: oklch(17.04% 0.04 56.31);
 --color-renaissance-dark-1000: oklch(15.50% 0.01 53.76);
+
+--border-color-mix-1: light-dark( var(--color-renaissance-light-1000), var(--color-renaissance-dark-1000) );
+--border-color-mix-2: light-dark( var(--color-renaissance-light-400), var(--color-renaissance-dark-400) );
+--border-color-muted: color-mix(in oklch, var(--border-color-mix-1), var(--border-color-mix-2) 13%);
+--border-color-subtle:color-mix(in oklch, var(--border-color-mix-1), var(--border-color-mix-2) 18%);
+--border-color-base: color-mix(in oklch, var(--border-color-mix-1), var(--border-color-mix-2) 25%);
+--border-color-interactive: color-mix(in oklch, var(--border-color-mix-1), var(--border-color-mix-2) 15%);
+--border-color-interactive--hover: color-mix(in oklch, var(--border-color-mix-1), var(--border-color-mix-2) 40%);
+--border-color-interactive--active: color-mix(in oklch, var(--border-color-mix-1), var(--border-color-mix-2) 30%);
+--border-color-emphasized: color-mix(in oklch, var(--border-color-mix-1), var(--border-color-mix-2) 45%);
+
 }
