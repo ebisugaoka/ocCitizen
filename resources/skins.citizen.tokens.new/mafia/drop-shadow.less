@@ -1,0 +1,39 @@
+.tokens-drop-shadow() {
+    --drop-shadow-xs: 0 1px 1px var(--box-shadow-color-alpha-base);
+    --drop-shadow-sm: 0 1px 2px var(--box-shadow-color-alpha-base);
+    --drop-shadow-md: 0 3px 3px var(--box-shadow-color-alpha-base);
+    --drop-shadow-lg: 0 4px 4px var(--box-shadow-color-alpha-base);
+    --drop-shadow-xl: 0 9px 7px var(--box-shadow-color-alpha-base);
+    --drop-shadow-2xl: 0 25px 25px var(--box-shadow-color-alpha-base);
+}
+
+.drop-shadow-xs {
+    --shadow-opacity: 0.05;
+    filter: drop-shadow(var(--drop-shadow-xs));
+}
+.drop-shadow-sm {
+    --shadow-opacity: 0.15;
+    filter: drop-shadow(var(--drop-shadow-sm));
+}
+
+.drop-shadow-md {
+    --shadow-opacity: 0.12;
+    filter: drop-shadow(var(--drop-shadow-md));
+}
+
+.drop-shadow-lg {
+    --shadow-opacity: 0.15;
+    filter: drop-shadow(var(--drop-shadow-lg));
+}
+.drop-shadow-xl {
+    --shadow-opacity: 0.1;
+    filter: drop-shadow(var(--drop-shadow-xl));
+}
+.drop-shadow-2xl {
+    --shadow-opacity: 0.15;
+    filter: drop-shadow(var(--drop-shadow-2xl));
+}
+
+.drop-shadow-none {
+    filter: drop-shadow(0 0 var(--box-shadow-transparent));
+}
