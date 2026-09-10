@@ -103,7 +103,7 @@ module.exports = exports = defineComponent( {
 	height: 100%;
 	overflow: hidden;
 	cursor: pointer;
-	border: var( --border-width-thick ) solid var( --border-color-base );
+	border: var( --border-width-medium ) solid var( --border-color-base );
 	border-radius: var( --border-radius-medium );
 	transition-duration: var( --transition-duration-base );
 	transition-property: border-color, background-color;
