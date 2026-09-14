@@ -175,7 +175,7 @@ module.exports = exports = defineComponent( {
 	// os / Auto — adaptive: a static light/dark split (a live media query
 	// can't be shown in a static swatch).
 	&--adaptive {
-		background: conic-gradient( from -45deg, var( --color-white ) 0 50%, var( --color-neutral-1000 ) 50% 100% );
+		background: conic-gradient( from -45deg, var( --color-neutral-50 ) 0 50%, var( --color-neutral-1000 ) 50% 100% );
 	}
 
 	.cdx-radio:hover & {
