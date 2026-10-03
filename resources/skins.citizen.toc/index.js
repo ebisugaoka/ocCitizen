@@ -17,6 +17,7 @@ const
 		.map( ( sel ) => `.mw-parser-output ${ sel }` ).join( ', ' ),
 	HEADLINE_SELECTOR = [ '.mw-headline', ...HEADING_TAGS.map( ( tag ) => `${ tag }[id]` ) ]
 		.map( ( sel ) => `.mw-parser-output ${ sel }` ).join( ', ' ),
+	CUSTOM_TOC_LANDMARK_SELECTOR = '.citizen-toc-landmark[id]',
 	TOC_SECTION_ID_PREFIX = 'toc-';
 
 /**
@@ -37,10 +38,11 @@ const getHeadingIntersectionHandler = ( changeActiveSections ) =>
 	( sections ) => {
 		const ids = [];
 		for ( const section of sections ) {
-			const headline = section.classList.contains( 'mw-body-content' ) ?
+			const headline = section.classList.contains( 'mw-body-content' ) ||
+				section.matches( CUSTOM_TOC_LANDMARK_SELECTOR ) ?
 				section :
 				section.querySelector( HEADLINE_SELECTOR );
-			if ( headline ) {
+			if ( headline && headline.id ) {
 				ids.push( `${ TOC_SECTION_ID_PREFIX }${ headline.id }` );
 			}
 		}
@@ -48,6 +50,158 @@ const getHeadingIntersectionHandler = ( changeActiveSections ) =>
 			changeActiveSections( ids );
 		}
 	};
+
+/**
+ * Escape plain landmark text before it is passed to the ToC's raw-HTML
+ * Mustache field. Native parser headings arrive pre-escaped; custom landmarks
+ * are read from textContent and must be escaped here.
+ *
+ * @param {string} value
+ * @return {string}
+ */
+function escapeHtml( value ) {
+	return value.replace( /[&<>"']/g, ( char ) => ( {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#039;'
+	}[ char ] ) );
+}
+
+/**
+ * Return the native headline element represented by a heading wrapper.
+ *
+ * @param {HTMLElement} heading
+ * @return {HTMLElement|null}
+ */
+function getNativeHeadline( heading ) {
+	return heading.querySelector( HEADLINE_SELECTOR );
+}
+
+/**
+ * Convert a custom page landmark into the section shape Citizen's ToC expects.
+ * These entries are navigation-only. They never participate in the collapsible
+ * content-section system in resources/skins.citizen.scripts/sections.js.
+ *
+ * @param {HTMLElement} landmark
+ * @param {number} index
+ * @return {Object}
+ */
+function makeCustomTocSection( landmark, index ) {
+	const requestedLevel = Number.parseInt( landmark.dataset.citizenTocLevel || '1', 10 );
+	const toclevel = Number.isNaN( requestedLevel ) ? 1 :
+		Math.min( 6, Math.max( 1, requestedLevel ) );
+	const label = ( landmark.dataset.citizenTocLabel || landmark.textContent || '' ).trim();
+
+	return {
+		toclevel,
+		anchor: landmark.id,
+		linkAnchor: landmark.id,
+		line: escapeHtml( label ),
+		number: landmark.dataset.citizenTocNumber || '',
+		index: `citizen-landmark-${ index + 1 }`,
+		byteoffset: 0,
+		fromtitle: '',
+		level: String( toclevel )
+	};
+}
+
+/**
+ * Merge custom landmarks with core's parser-generated ToC sections in document
+ * order. Core remains authoritative for real headings and their nesting;
+ * custom landmarks default to level 1 and can opt into another level with
+ * data-citizen-toc-level="N".
+ *
+ * @param {Object[]} sections
+ * @param {HTMLElement} bodyContent
+ * @return {Object[]}
+ */
+function mergeCustomTocLandmarks( sections, bodyContent ) {
+	const nativeByAnchor = new Map();
+	for ( const section of sections ) {
+		nativeByAnchor.set( section.anchor, { ...section } );
+	}
+
+	const merged = [];
+	const seenAnchors = new Set();
+	let customIndex = 0;
+	const selector = `${ HEADING_SELECTOR }, ${ CUSTOM_TOC_LANDMARK_SELECTOR }`;
+
+	for ( const element of bodyContent.querySelectorAll( selector ) ) {
+		if ( element.matches( CUSTOM_TOC_LANDMARK_SELECTOR ) ) {
+			if ( !seenAnchors.has( element.id ) ) {
+				merged.push( makeCustomTocSection( element, customIndex++ ) );
+				seenAnchors.add( element.id );
+			}
+			continue;
+		}
+
+		const headline = getNativeHeadline( element );
+		if ( !headline || !headline.id || seenAnchors.has( headline.id ) ) {
+			continue;
+		}
+		const nativeSection = nativeByAnchor.get( headline.id );
+		if ( nativeSection ) {
+			merged.push( nativeSection );
+			seenAnchors.add( headline.id );
+		}
+	}
+
+	// Keep any parser sections that could not be matched back to a DOM heading.
+	// This is rare, but dropping them would be worse than placing them last.
+	for ( const section of sections ) {
+		if ( !seenAnchors.has( section.anchor ) ) {
+			merged.push( { ...section } );
+			seenAnchors.add( section.anchor );
+		}
+	}
+
+	return merged;
+}
+
+/**
+ * Reconstruct the currently server-rendered ToC section list. This is a
+ * fallback for initial page load if core's wikipage.tableOfContents hook did
+ * not fire (or did not retain its last value) before Citizen's lazy ToC module
+ * starts. It lets custom-only pages work too.
+ *
+ * @param {HTMLElement} tocElement
+ * @return {Object[]}
+ */
+function readRenderedTocSections( tocElement ) {
+	const sections = [];
+	for ( const row of tocElement.querySelectorAll( '.citizen-toc-list-item' ) ) {
+		const id = row.id || '';
+		if ( !id.startsWith( TOC_SECTION_ID_PREFIX ) ) {
+			continue;
+		}
+		const link = row.querySelector( ':scope > .citizen-toc-link' );
+		const heading = link && link.querySelector( '.citizen-toc-heading' );
+		if ( !link || !heading ) {
+			continue;
+		}
+		const levelClass = Array.from( row.classList )
+			.find( ( className ) => className.startsWith( 'citizen-toc-level-' ) );
+		const toclevel = levelClass ? Number.parseInt( levelClass.slice( 18 ), 10 ) : 1;
+		const anchor = id.slice( TOC_SECTION_ID_PREFIX.length );
+		const href = link.getAttribute( 'href' ) || `#${ anchor }`;
+		const number = link.querySelector( '.citizen-toc-numb' );
+
+		sections.push( {
+			toclevel: Number.isNaN( toclevel ) ? 1 : toclevel,
+			anchor,
+			linkAnchor: href.startsWith( '#' ) ? href.slice( 1 ) : anchor,
+			line: heading.innerHTML,
+			number: number ? number.textContent : '',
+			index: `rendered-${ sections.length + 1 }`,
+			byteoffset: 0,
+			fromtitle: '',
+			level: String( Number.isNaN( toclevel ) ? 1 : toclevel )
+		} );
+	}
+	return sections;
+}
 
 /**
  * Return the computed value of the `scroll-margin-top` CSS property of the document element
@@ -126,7 +280,9 @@ const setupTableOfContents = (
 		document,
 		mw
 	} );
-	const elements = () => bodyContent.querySelectorAll( `${ HEADING_SELECTOR }, .mw-body-content` );
+	const elements = () => bodyContent.querySelectorAll(
+		`${ HEADING_SELECTOR }, ${ CUSTOM_TOC_LANDMARK_SELECTOR }, .mw-body-content`
+	);
 
 	// Whether the scroll spy has activated any section yet. The initial
 	// activation is deferred to idle (see below); once the spy has fired,
@@ -159,11 +315,29 @@ const setupTableOfContents = (
 	mw.hook( 've.activationStart' ).add( () => {
 		sectionObserver.pause();
 	} );
+	let receivedCoreSections = false;
 	mw.hook( 'wikipage.tableOfContents' ).add( ( sections ) => {
-		tableOfContents.reloadTableOfContents( sections ).then( () => {
+		receivedCoreSections = true;
+		const mergedSections = mergeCustomTocLandmarks( sections, bodyContent );
+		tableOfContents.reloadTableOfContents( mergedSections ).then( () => {
 			updateElements();
 		} );
 	} );
+
+	// The hook normally has memory and immediately supplies the parser's section
+	// data. If it does not, rebuild from the server-rendered rows so landmarks
+	// still appear on first load. This also populates a ToC made solely from
+	// custom landmarks, where core had no section data to render.
+	if (
+		!receivedCoreSections &&
+		bodyContent.querySelector( CUSTOM_TOC_LANDMARK_SELECTOR )
+	) {
+		const renderedSections = readRenderedTocSections( tocElement );
+		const mergedSections = mergeCustomTocLandmarks( renderedSections, bodyContent );
+		tableOfContents.reloadTableOfContents( mergedSections ).then( () => {
+			updateElements();
+		} );
+	}
 	mw.hook( 've.deactivationComplete' ).add( () => {
 		updateElements();
 	} );

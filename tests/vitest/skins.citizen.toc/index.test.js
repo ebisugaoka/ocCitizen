@@ -3,6 +3,7 @@
 
 const tableOfContents = require( '../../../resources/skins.citizen.toc/index.js' );
 const mw = require( '../mocks/mw.js' );
+const { TableOfContents } = require( '../../../resources/skins.citizen.toc/tableOfContents.js' );
 
 /**
  * Minimal ToC + article fixture: one top-level section whose heading
@@ -87,11 +88,68 @@ describe( 'tableOfContents module entry', () => {
 	} );
 
 	afterEach( () => {
+		vi.restoreAllMocks();
 		[ 've.activationStart', 've.deactivationComplete', 'wikipage.tableOfContents' ]
 			.forEach( ( name ) => mw.hook( name )._reset() );
 		vi.unstubAllGlobals();
 		vi.clearAllMocks();
 		document.body.innerHTML = '';
+	} );
+
+	it( 'merges chapter landmarks with native headings in document order', () => {
+		createFixture();
+		document.querySelector( '.mw-parser-output' ).insertAdjacentHTML(
+			'afterbegin', '<div id="chapter" class="citizen-toc-landmark">Chapter</div>'
+		);
+		const reload = vi.spyOn( TableOfContents.prototype, 'reloadTableOfContents' )
+			.mockResolvedValue( [] );
+		const sections = [
+			{ anchor: 's1', line: 'Section 1', toclevel: 1 },
+			{ anchor: 's2', line: 'Section 2', toclevel: 1 }
+		];
+		mw.hook( 'wikipage.tableOfContents' ).fire( sections );
+		const MockIntersectionObserver = vi.fn( function () {
+			this.observe = vi.fn();
+			this.unobserve = vi.fn();
+			this.disconnect = vi.fn();
+		} );
+
+		tableOfContents.init( {
+			document, window: createMockWindow(), mw,
+			IntersectionObserver: MockIntersectionObserver
+		} );
+
+		expect( reload.mock.calls[ 0 ][ 0 ].map( ( section ) => section.anchor ) )
+			.toEqual( [ 'chapter', 's1', 's2' ] );
+		expect( sections ).toEqual( [
+			{ anchor: 's1', line: 'Section 1', toclevel: 1 },
+			{ anchor: 's2', line: 'Section 2', toclevel: 1 }
+		] );
+	} );
+
+	it( 'populates a landmark-only outline and escapes its label', () => {
+		createFixture();
+		document.querySelector( '.mw-parser-output' ).innerHTML =
+			'<div id="chapter" class="citizen-toc-landmark" data-citizen-toc-level="2"></div>';
+		document.getElementById( 'chapter' ).textContent = '<img src=x onerror=alert(1)> & Chapter';
+		const reload = vi.spyOn( TableOfContents.prototype, 'reloadTableOfContents' )
+			.mockResolvedValue( [] );
+		const MockIntersectionObserver = vi.fn( function () {
+			this.observe = vi.fn();
+			this.unobserve = vi.fn();
+			this.disconnect = vi.fn();
+		} );
+
+		tableOfContents.init( {
+			document, window: createMockWindow(), mw,
+			IntersectionObserver: MockIntersectionObserver
+		} );
+
+		expect( reload.mock.calls[ 0 ][ 0 ][ 0 ] ).toMatchObject( {
+			anchor: 'chapter',
+			toclevel: 2,
+			line: '&lt;img src=x onerror=alert(1)&gt; &amp; Chapter'
+		} );
 	} );
 
 	it( 'should defer initial section activation until idle plus one frame', () => {

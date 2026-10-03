@@ -241,10 +241,20 @@ class SkinCitizen extends SkinMustache {
 
 		// Held in a variable because two decisions need it: the aside renders it
 		// as a panel, and the scroll spy is queued only when it has sections.
+		// Custom ToC landmarks are ordinary page elements, not parser headings, so
+		// core's data-toc does not know about them. Keep the ToC shell alive when
+		// one is present; the frontend merges those landmarks into core's section
+		// data without turning them into collapsible content sections.
+		$hasCustomTocLandmarks = preg_match(
+			'/class=(?:"[^"]*\bcitizen-toc-landmark\b[^"]*"|\'[^\']*\bcitizen-toc-landmark\b[^\']*\')/i',
+			$parentData['html-body-content']
+		) === 1;
+
 		$tocPanel = new CitizenAsidePanelTableOfContents(
 			$parentData['data-toc'] ?? [],
 			$localizer,
-			$config
+			$config,
+			[ 'has-custom-landmarks' => $hasCustomTocLandmarks ]
 		);
 		// Captured before the loop below runs the panel's getTemplateData(),
 		// which decorates the section list in place. Asking afterwards reads

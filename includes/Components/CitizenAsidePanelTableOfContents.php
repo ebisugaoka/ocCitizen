@@ -14,10 +14,12 @@ use MessageLocalizer;
  */
 class CitizenAsidePanelTableOfContents implements CitizenAsidePanel {
 
+	/** @param array{has-custom-landmarks?: bool} $options */
 	public function __construct(
 		private array $tocData,
 		private readonly MessageLocalizer $localizer,
-		private readonly Config $config
+		private readonly Config $config,
+		private readonly array $options = []
 	) {
 	}
 
@@ -38,7 +40,8 @@ class CitizenAsidePanelTableOfContents implements CitizenAsidePanel {
 	}
 
 	public function hasContent(): bool {
-		return ( $this->tocData['array-sections'] ?? [] ) !== [];
+		return ( $this->tocData['array-sections'] ?? [] ) !== []
+			|| ( $this->options['has-custom-landmarks'] ?? false );
 	}
 
 	public function getPlacement(): string {
