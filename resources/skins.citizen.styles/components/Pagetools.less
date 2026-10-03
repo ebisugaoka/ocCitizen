@@ -173,6 +173,15 @@
 		// card tappable but unpainted (#1892). Sitting outside the strip is also
 		// what keeps the controls around it in place.
 		&__tabs {
+			// If pageTools.js has moved every usable page action into the More
+			// menu, a selected edit tab can be the only thing left in this strip.
+			// Citizen hides selected tabs visually, but this flex item would still
+			// consume the parent's gap and make a More-only toolbar wider than its
+			// button. Remove the empty visual slot so the toolbar becomes square.
+			&:not( :has( .mw-list-item:not( .selected ) ) ) {
+				display: none;
+			}
+
 			min-width: 0;
 			overflow: auto hidden;
 			// Must not chain into browser back-navigation.
