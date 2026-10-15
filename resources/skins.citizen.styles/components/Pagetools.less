@@ -179,6 +179,15 @@
 			overscroll-behavior: contain;
 			scrollbar-width: none;
 
+			// Empty and selected-only portlets must not leave a flex gap.
+			&:not( :has( > .mw-portlet:not( .mw-portlet-empty ) li:not( .selected ) ) ) {
+				display: none;
+			}
+
+			> .mw-portlet .selected {
+				display: none;
+			}
+
 			&::-webkit-scrollbar {
 				display: none;
 			}
