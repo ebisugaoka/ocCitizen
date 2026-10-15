@@ -1,0 +1,78 @@
+// Match MediaWiki's non-wikitext CodeMirror 6 editors in dark mode.
+// CodeMirror applies @codemirror/theme-one-dark to CSS/JS/Lua/JSON modes, but
+// deliberately skips it for MediaWiki wikitext because wikitext uses .cm-mw-*
+// token classes. Scope the same palette to the wikitext editor so Template:
+// and ordinary page editing do not switch to a second syntax theme.
+.mixin-citizen-codemirror-one-dark-wikitext() {
+	.cm-editor.cm-mw-mode-mediawiki {
+		// @codemirror/theme-one-dark 6.1.2
+		--color-syntax-red: #e06c75;
+		--color-syntax-orange: #d19a66;
+		--color-syntax-yellow: #e5c07b;
+		--color-syntax-green: #98c379;
+		--color-syntax-cyan: #56b6c2;
+		--color-syntax-blue: #61afef;
+		--color-syntax-paleblue: #abb2bf;
+		--color-syntax-purple: #c678dd;
+		--color-syntax-brown: #d19a66;
+		--color-syntax-pink: #e06c75;
+		--color-syntax-violet: #c678dd;
+		--color-syntax-gray: #7d8799;
+		--color-progressive: #61afef;
+		--color-progressive--hover: #56b6c2;
+		--color-emphasized: #abb2bf;
+		--color-base: #abb2bf;
+
+		color: #abb2bf;
+		background-color: #282c34;
+
+		.cm-content {
+			caret-color: #528bff;
+		}
+
+		.cm-cursor,
+		.cm-dropCursor {
+			border-left-color: #528bff;
+		}
+
+		.cm-selectionBackground,
+		&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground {
+			background-color: #3e4451 !important;
+		}
+
+		.cm-gutters {
+			color: #7d8799;
+			background-color: #282c34;
+		}
+
+		.cm-activeLine {
+			background-color: #6699ff0b;
+		}
+
+		.cm-activeLineGutter {
+			background-color: #2c313a;
+		}
+
+		.cm-selectionMatch {
+			background-color: #aafe661a;
+		}
+
+		.cm-tooltip {
+			color: #abb2bf;
+			background-color: #353a42;
+			border-color: transparent;
+		}
+	}
+}
+
+@media screen {
+	html.skin-theme-clientpref-night {
+		.mixin-citizen-codemirror-one-dark-wikitext();
+	}
+}
+
+@media screen and ( prefers-color-scheme: dark ) {
+	html.skin-theme-clientpref-os {
+		.mixin-citizen-codemirror-one-dark-wikitext();
+	}
+}
