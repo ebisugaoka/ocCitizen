@@ -23,7 +23,7 @@
 	//                            chrome from accent — e.g. gray chrome
 	//                            with a colorful accent.
 	--color-primary-oklch__h: @color-primary-oklch__h-default;
-	--color-neutral-oklch__h: var( --color-primary-oklch__h );
+	--color-neutral-oklch__h: 53.75;
 
 	// Primary tracks Codex blue's L profile. Peak chroma sits at
 	// -700 (the Wikimedia brand-anchor stop, blue-700 = #36c) —
@@ -50,17 +50,18 @@
 	// Chroma is intentionally low (peak 0.04) so chrome reads as
 	// gray-with-a-hint rather than fully tinted — closer to
 	// Monet's neutral-variant tier.
-	--color-neutral-50: oklch( 98% 0.005 var( --color-neutral-oklch__h ) );
-	--color-neutral-100: oklch( 94% 0.012 var( --color-neutral-oklch__h ) );
-	--color-neutral-200: oklch( 90% 0.02 var( --color-neutral-oklch__h ) );
-	--color-neutral-300: oklch( 84% 0.028 var( --color-neutral-oklch__h ) );
-	--color-neutral-400: oklch( 73% 0.035 var( --color-neutral-oklch__h ) );
-	--color-neutral-500: oklch( 51% 0.04 var( --color-neutral-oklch__h ) );
-	--color-neutral-600: oklch( 39% 0.035 var( --color-neutral-oklch__h ) );
-	--color-neutral-700: oklch( 30% 0.028 var( --color-neutral-oklch__h ) );
-	--color-neutral-800: oklch( 22% 0.02 var( --color-neutral-oklch__h ) );
-	--color-neutral-900: oklch( 17% 0.012 var( --color-neutral-oklch__h ) );
-	--color-neutral-1000: oklch( 11% 0.01 var( --color-neutral-oklch__h ) );
+
+--color-neutral-50: oklch( 98% 0.005 var( --color-neutral-oklch__h ) );
+--color-neutral-100: oklch( 94.2% 0.012 var( --color-neutral-oklch__h ) );
+--color-neutral-200: oklch( 90.4% 0.02 var( --color-neutral-oklch__h ) );
+--color-neutral-300: oklch( 84.7% 0.028 var( --color-neutral-oklch__h ) );
+--color-neutral-400: oklch( 74.3% 0.035 var( --color-neutral-oklch__h ) );
+--color-neutral-500: oklch( 53.4% 0.04 var( --color-neutral-oklch__h ) );
+--color-neutral-600: oklch( 42.1% 0.035 var( --color-neutral-oklch__h ) );
+--color-neutral-700: oklch( 33.5% 0.028 var( --color-neutral-oklch__h ) );
+--color-neutral-800: oklch( 25.9% 0.02 var( --color-neutral-oklch__h ) );
+--color-neutral-900: oklch( 21.2% 0.012 var( --color-neutral-oklch__h ) );
+--color-neutral-1000: oklch( 15.5% 0.0109 var( --color-neutral-oklch__h ) );
 }
 
 .new-primitives-citizen() {
