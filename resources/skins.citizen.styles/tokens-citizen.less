@@ -74,13 +74,17 @@
 
 	// Spacing
 	--space-unit: @space-unit;
+	--space-3xs: calc( 0.125 * var( --space-unit ) );
+	--space-2xs: var( --space-xxs );
 	--space-xxs: calc( 0.25 * var( --space-unit ) );
 	--space-xs: calc( 0.5 * var( --space-unit ) );
 	--space-sm: calc( 0.75 * var( --space-unit ) );
 	--space-md: var( --space-unit );
 	--space-lg: calc( 1.25 * var( --space-unit ) );
 	--space-xl: calc( 1.5 * var( --space-unit ) );
-	--space-xxl: calc( 2 * var( --space-unit ) );
+	--space-xxl: calc( 1.75 * var( --space-unit ) );
+	--space-xxxl: var( --space-3xl );
+	--space-3xl: calc( 2 * var( --space-unit ) );
 	.mixin-citizen-content-space( var( --space-md ) );
 
 	// Multiples of the heading's own font size. Both heading markups read these,
